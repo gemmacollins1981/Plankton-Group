@@ -1,0 +1,235 @@
+
+library(ggplot2)
+library(gridExtra)
+library(ggplot2)
+library(dplyr)
+library(readr)      # For CSV
+library(readxl)  
+library(scales)  # <-- Load this for nice number formatting
+
+plankton <- plankton_days[,-3]
+
+plankton<-read_excel("Dataset/plankton_days.xlsx")
+
+# Rename column
+colnames(plankton)[colnames(plankton) == "Plankton (280ml)"] <- "Plankton"
+
+# Convert to factors
+plankton$Treatment <- as.factor(plankton$Treatment)
+plankton$Day <- as.factor(plankton$Day)
+
+# Remove NAs
+plankton_clean <- plankton %>% filter(!is.na(Plankton))
+
+#Split by day
+df_day1 <- plankton_clean %>% filter(Day == 1)
+df_day2 <- plankton_clean %>% filter(Day == 2)
+
+# Get consistent y-axis limits
+y_limits <- range(plankton_clean$Plankton, na.rm = TRUE)
+
+#Plotting Plankton----
+# Calm color-blind-friendly palette for Plankton
+plankton_colors <- c(
+  "Controlled" = "#66c2a5",                  # Soft Blue
+  "Dissolved Organic \nCarbon (DOC)" = "#fc8d62",  # Sky Cyan
+  "Phosphate" = "#56B4E9",                   # Leaf Green
+  "Phosphate & DOC" = "#CC79A7"              # Mustard Yellow
+)
+
+# Apply descriptive labels
+treatment_labels <- c(
+  "C" = "Controlled",
+  "D" = "Dissolved Organic \nCarbon (DOC)",
+  "P" = "Phosphate",
+  "PD" = "Phosphate & DOC"
+)
+
+df_day1 <- df_day1 %>%
+  mutate(Treatment_label = treatment_labels[Treatment])
+df_day2 <- df_day2 %>%
+  mutate(Treatment_label = treatment_labels[Treatment])
+
+
+# Find common y limits across both datasets
+y_limits <- range(c(df_day1$Plankton, df_day2$Plankton), na.rm = TRUE)
+
+# Plot for Day 1
+(day1 <- ggplot(df_day1, aes(x = Treatment_label, y = Plankton, fill = Treatment_label)) +
+    geom_boxplot() +
+    geom_point() +
+    scale_y_continuous(limits = y_limits, labels = scales::comma) +
+    labs(title = "a) Day 1",
+         y = "Phytoplankton Abundance (280ml)",
+         x = "Treatment") +
+    theme_classic() +
+    scale_fill_manual(values = plankton_colors) +
+    theme(legend.position = "none",
+          axis.text.x = element_text()))
+
+# Plot for Day 2
+(day2 <- ggplot(df_day2, aes(x = Treatment_label, y = Plankton, fill = Treatment_label)) +
+    geom_boxplot() +
+    geom_point() +
+    scale_y_continuous(limits = y_limits, labels = scales::comma) +
+    labs(title = "b) Day 2",
+         x = "Treatment") +
+    theme_classic() +
+    scale_fill_manual(values = plankton_colors) +
+    theme( legend.position = "none",axis.text.x  = element_text(), axis.title.y = element_blank(),   # remove y-axis title
+           axis.text.y  = element_blank(),   # remove y-axis labels
+           axis.ticks.y = element_blank(),   # remove y-axis ticks
+           axis.line.y  = element_blank()    # remove y-axis line
+    ))
+
+# Combine plots
+plankton_panel <- grid.arrange(day1, day2, ncol = 2)
+
+#ANOVA Plankton----
+#testing assumptions
+hist(plankton_clean$Plankton, breaks=10)
+hist(plankton_clean$Absorbance)
+
+hist(log(plankton_clean$Plankton),breaks=10)
+
+plot(plankton_clean$Plankton)
+
+lmP1<-lm(Plankton~Treatment,data=df_day1)
+plot(lmP1)
+
+lmP2<-lm(Plankton~Treatment,data=df_day2)
+plot(lmP2)
+
+shapiro.test(df_day1$Plankton)
+shapiro.test(df_day2$Plankton)
+#Your plankton abundance data on both days are approximately normally distributed, based on the Shapiro-Wilk test.
+
+anova_d1 <- aov(Plankton~Treatment, data = df_day1)
+summary(anova_d1)
+
+anova_d2 <- aov(Plankton~Treatment, data = df_day2)
+summary(anova_d2)
+
+TukeyHSD(anova_d1)
+TukeyHSD(anova_d2)
+
+
+plankton <- plankton_days
+
+# Rename column
+colnames(plankton)[colnames(plankton) == "Plankton (280ml)"] <- "Plankton"
+
+# Convert to factors
+plankton$Treatment <- as.numeric(plankton$Treatment)
+plankton$Day <- as.factor(plankton$Day)
+
+# Remove NAs
+
+library(dplyr)
+
+
+
+#Split by day
+
+
+# Get consistent y-axis limits
+#y_limits <- range(plankton_clean$Plankton, na.rm = TRUE)
+
+#Plotting Phosphate----
+# Plot for Day 1
+
+library(readxl)
+phosphate_clean <- final_phosphate
+                                                                            "numeric", "numeric"))
+
+phosphate_clean <- phosphate_clean %>% filter(!is.na(P_Concentration))
+
+P_day1 <- phosphate_clean %>% filter(Day == 1)
+P_day2 <- phosphate_clean %>% filter(Day == 2)
+
+# Define custom colors for treatments
+phosphate_colors <- c(
+  "C" = "#66c2a5",   # Control
+  "D" = "#fc8d62",   # D only
+  "P" = "#56B4E9",   # P only
+  "PD" = "#CC79A7"   # P + D
+)
+
+
+# Create a named vector for treatment labels
+treatment_labels <- c(
+  "C" = "Controlled",
+  "D" = "Dissolved Organic \nCarbon (DOC)",
+  "P" = "Phosphate",
+  "PD" = "Phosphate & DOC"
+)
+
+P_day1 <- P_day1 %>%
+  mutate(Treatment_label = treatment_labels[Treatment])
+P_day2 <- P_day2 %>%
+  mutate(Treatment_label = treatment_labels[Treatment])
+
+library(gridExtra)
+
+# Day 1 plot
+# Day 1 plot (no change here)
+# Day 1 plot
+# Day 1 plot (no change here)
+(day1_phosphate <- ggplot(P_day1, aes(x = Treatment_label, y = P_Concentration, fill = Treatment)) +
+    geom_boxplot() +
+    geom_point(colour = 'black', size = 2) +
+    scale_y_continuous(labels = scales::comma) +  # Use scales::comma for formatting
+    labs(title = "a) Day 1",
+         y = "Phosphate Concentration (mg/283ml)",
+         x = "Treatment") +
+    scale_fill_manual(values = phosphate_colors) +
+    theme_classic() +
+    theme(legend.position = "none"))
+
+# Day 2 plot with no y-axis, no axis line, and no ticks
+(day2_phosphate <- ggplot(P_day2, aes(x = Treatment_label, y = P_Concentration, fill = Treatment)) +
+    geom_boxplot() +
+    geom_point(colour = 'black', size = 2) +
+    scale_y_continuous(labels = scales::comma) +  # Use scales::comma for formatting
+    labs(title = "b) Day 2",
+         y = NULL,  # Remove y-axis title
+         x = "Treatment") +
+    scale_fill_manual(values = phosphate_colors) +
+    theme_classic() +
+    theme(legend.position = "none",
+          axis.title.y = element_blank(),   # Remove y-axis title
+          axis.text.y = element_blank(),    # Remove y-axis labels
+          axis.ticks.y = element_blank(),   # Remove y-axis ticks
+          axis.line.y = element_blank()))   # Remove y-axis line
+
+# Combine plots
+phosphate_panel <- grid.arrange(day1_phosphate, day2_phosphate, ncol = 2)
+
+    
+    # Combine plots
+    png('phosphate_graph.png', width= 9, height = 6, units = "in", res = 400)
+    phosphate_panel <- grid.arrange(day1_phosphate, day2_phosphate, ncol = 2)
+    dev.off()
+
+#ANOVA Phosphate ----
+#testing assumptions
+hist(phosphate_clean$P_Concentration, breaks=10)
+
+lmPhosphate1<-lm(P_Concentration~Treatment,data=P_day1)
+plot(lmPhosphate1)
+
+lmP2<-lm(P_Concentration~Treatment,data=P_day2)
+plot(lmP2)
+
+shapiro.test(P_day1$P_Concentration)
+shapiro.test(P_day2$P_Concentration)
+#Your plankton abundance data on both days are approximately normally distributed, based on the Shapiro-Wilk test.
+
+anova_d1 <- aov(P_Concentration~Treatment, data = P_day1)
+summary(anova_d1)
+
+anova_d2 <- aov(P_Concentration~Treatment, data = P_day2)
+summary(anova_d2)
+
+TukeyHSD(anova_d1)
+TukeyHSD(anova_d2)
